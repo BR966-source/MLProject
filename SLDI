@@ -1,0 +1,31 @@
+import sqlite3
+
+# Sample transaction data (you should load or insert actual data)
+transaction_data = [
+    (100.5, 'user_1', '2024-11-12 12:00:00', 0),
+    (250.0, 'user_2', '2024-11-12 12:15:00', 1),  # Fraudulent
+    (50.0, 'user_3', '2024-11-12 12:30:00', 0)
+]
+
+# Connect to SQLite database
+conn = sqlite3.connect('fraud_transactions.db')
+cursor = conn.cursor()
+
+# Create a table if not exists
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS transactions (
+        id INTEGER PRIMARY KEY,
+        transaction_amount REAL,
+        user_id TEXT,
+        transaction_time TEXT,
+        fraud INTEGER
+    )
+''')
+
+# Insert sample transaction data into the table
+cursor.executemany('''
+    INSERT INTO transactions (transaction_amount, user_id, transaction_time, fraud) VALUES (?, ?, ?, ?)
+''', transaction_data)
+
+conn.commit()
+conn.close()
