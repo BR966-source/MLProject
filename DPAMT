@@ -1,0 +1,49 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVC
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from xgboost import XGBClassifier
+from sklearn.metrics import accuracy_score
+import pickle
+
+# Load your dataset
+data = pd.read_csv('transactions.csv')
+
+# Assume the target column is 'fraud'
+X = data.drop('fraud', axis=1)
+y = data['fraud']
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Standardize the data
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+# Train models
+models = {
+    'SVM': SVC(kernel='linear'),
+    'Logistic Regression': LogisticRegression(),
+    'Random Forest': RandomForestClassifier(),
+    'XGBoost': XGBClassifier()
+}
+
+# Save the best performing model (for example, Random Forest)
+best_model = None
+best_accuracy = 0
+for name, model in models.items():
+    model.fit(X_train, y_train)
+    y_pred = model.predict(X_test)
+    accuracy = accuracy_score(y_test, y_pred)
+    print(f'{name} Accuracy: {accuracy}')
+
+    # Save best model (Random Forest in this case, you can change based on accuracy)
+    if accuracy > best_accuracy:
+        best_accuracy = accuracy
+        best_model = model
+
+# Save the best model for later use in Flask app
+pickle.dump(best_model, open('fraud_model.pkl', 'wb'))
